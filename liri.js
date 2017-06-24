@@ -65,47 +65,122 @@ function liri(){
 		break;
 
 	case "spotify-this-song":
-		let songName = "";
-		for (let i = 3; i < input.length; i++){
-			songName += input[i] + " ";
+		inquirer.prompt([
+		{
+			type: "list",
+			message: "How would you like to search?",
+			choices: ["Custom Search", "Choose For Me"],
+			name: "musicSearch"
 		}
-		spotify.search({ type: 'track', query: songName }, function(err, data) {
-		  if (err) {
-		    return console.log('Error occurred: ' + err);
-		  }
-	  	  let song = data.tracks.items[0];
-	      console.log("\nArtist Name: " + song.artists[0].name +
-	      	"\nSong Name: " + song.name +
-	      	"\nPreview Link: " + song.preview_url +
-	     	"\nAlbum: " + song.album.name); 
-		});
+		]).then(function(search){
+			switch(search.musicSearch){
+				case "Custom Search":
+					inquirer.prompt([
+					{
+						type: "input",
+						message: "What song would you like to search for?",
+						name: "song"
+					}
+					]).then(function(input){
+						spotify.search({ type: 'track', query: input.song }, function(err, data) {
+					    if (err) {
+					      return console.log('Error occurred: ' + err);
+					  	}
+				  	  	  let song = data.tracks.items[0];
+				          console.log("\nArtist Name: " + song.artists[0].name +
+				      	  "\nSong Name: " + song.name +
+				      	  "\nPreview Link: " + song.preview_url +
+				     	  "\nAlbum: " + song.album.name); 
+					});
+					})
+					break;
+
+				case "Choose For Me":
+					let songName = "The Sign Ace of Base";
+					spotify.search({ type: 'track', query: songName }, function(err, data) {
+					  if (err) {
+					    return console.log('Error occurred: ' + err);
+					  }
+				  	  let song = data.tracks.items[0];
+				      console.log("\nArtist Name: " + song.artists[0].name +
+				      	"\nSong Name: " + song.name +
+				      	"\nPreview Link: " + song.preview_url +
+				     	"\nAlbum: " + song.album.name); 
+					});
+					break;
+			}
+
+		})
 		break;
 	case "movie-this":
-		let movieName = "";
-		for (let i = 3; i < input.length; i++){
-			movieName += input[i] + " ";
+		inquirer.prompt([
+		{
+			type: "list",
+			message: "How would you like to search?",
+			choices: ["Custom Search", "Choose For Me"],
+			name: "movieSearch"
 		}
-		let queryURL = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
-		request(queryURL, function(error, response, body){
-			if (!error && response.statusCode === 200) {
-				// set variable to make it easier to call JSON.parse()
-				let parse = JSON.parse;
-				// Declare URL for Rotten Tomatoes
-				let rottenURL = "https://www.rottentomatoes.com/m/" + parse(body).Title.replace(/:/g, "").replace(/'/g, "");
-				// Replace spaces with underscores in the URL
-				rottenURL = rottenURL.replace(/ /g, "_").toLowerCase();
-				console.log("\nTitle: " + parse(body).Title + 
-					"\nReleased: " + parse(body).Year + 
-					"\nIMDB Rating: " + parse(body).imdbRating + 
-					"\nProduced in: " + parse(body).Country +
-					"\nPlot: " + parse(body).Plot +
-					"\nActors: " + parse(body).Actors +
-					"\nRotten Tomatoes URL: " + rottenURL);
+		]).then(function(search){
+			switch(search.movieSearch){
+				case "Custom Search":
+					inquirer.prompt([
+					{
+						type: "input",
+						message: "What movie would you like to search for?",
+						name: "movie"
+					}
+					]).then(function(input){
+						let queryURL = "http://www.omdbapi.com/?t=" + input.movie + "&y=&plot=short&apikey=40e9cece";
+						request(queryURL, function(error, response, body){
+							if (!error && response.statusCode === 200) {
+								// set variable to make it easier to call JSON.parse()
+								let parse = JSON.parse;
+								// Declare URL for Rotten Tomatoes
+								let rottenURL = "https://www.rottentomatoes.com/m/" + parse(body).Title.replace(/:/g, "").replace(/'/g, "");
+								// Replace spaces with underscores in the URL
+								rottenURL = rottenURL.replace(/ /g, "_").toLowerCase();
+								console.log("\nTitle: " + parse(body).Title + 
+									"\nReleased: " + parse(body).Year + 
+									"\nIMDB Rating: " + parse(body).imdbRating + 
+									"\nProduced in: " + parse(body).Country +
+									"\nPlot: " + parse(body).Plot +
+									"\nActors: " + parse(body).Actors +
+									"\nRotten Tomatoes URL: " + rottenURL);
+							}
+							else {
+								console.log(error);
+							}
+						})
+					})
+					break;
+				case "Choose For Me":
+					let movieName = "Mr Robot"
+					let queryURL = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
+					request(queryURL, function(error, response, body){
+						if (!error && response.statusCode === 200) {
+							// set variable to make it easier to call JSON.parse()
+							let parse = JSON.parse;
+							// Declare URL for Rotten Tomatoes
+							let rottenURL = "https://www.rottentomatoes.com/tv/mr_robot/";
+							// Replace spaces with underscores in the URL
+							rottenURL = rottenURL.replace(/ /g, "_").toLowerCase();
+							console.log("\nTitle: " + parse(body).Title + 
+								"\nReleased: " + parse(body).Year + 
+								"\nIMDB Rating: " + parse(body).imdbRating + 
+								"\nProduced in: " + parse(body).Country +
+								"\nPlot: " + parse(body).Plot +
+								"\nActors: " + parse(body).Actors +
+								"\nRotten Tomatoes URL: " + rottenURL);
+						}
+						else {
+							console.log(error);
+						}
+					})
+					break;
 			}
-			else {
-				console.log(error);
-			}
+
 		})
+
 		break;
 	case "do-what-it-says":
 		fs.readFile('random.txt', 'utf-8', function(err, data){
@@ -124,6 +199,7 @@ function liri(){
 		});
 		liri();
 		break;
+
 }
 };
 liri();
